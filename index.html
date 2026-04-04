@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Gojo Birthday — Visual Novel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #0a0a0c;
+      --bg-mid: #12101a;
+      --glass: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.22);
+      --text: #f4f0ff;
+      --muted: rgba(244, 240, 255, 0.72);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      background: radial-gradient(120% 80% at 50% 0%, #1a1028 0%, var(--bg-deep) 45%, #050508 100%);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #pulse-overlay {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      opacity: 0;
+      background: radial-gradient(circle at 50% 40%, rgba(255, 220, 255, 0.35), transparent 55%);
+      mix-blend-mode: screen;
+    }
+
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: linear-gradient(160deg, #140a1c 0%, var(--bg-deep) 50%, #060408 100%);
+      text-align: center;
+      transition: opacity 0.6s ease, visibility 0.6s;
+    }
+    #start-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .title-block h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      font-size: clamp(2rem, 6vw, 3.25rem);
+      letter-spacing: 0.02em;
+      margin: 0 0 0.5rem;
+      text-shadow: 0 0 40px rgba(180, 140, 255, 0.35);
+    }
+    .title-block p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 22rem;
+      margin: 0 auto 1.75rem;
+      line-height: 1.5;
+    }
+
+    .btn-primary {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.85rem 2rem;
+      border-radius: 999px;
+      border: 2px solid #fff;
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+    .btn-primary:hover { background: rgba(255, 255, 255, 0.12); }
+    .btn-primary:active { transform: scale(0.97); }
+
+    #stage-wrap {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: max(0.75rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) calc(140px + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    #soft-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0;
+      pointer-events: none;
+      background-size: cover;
+      background-position: center top;
+      transition: opacity 0.8s ease;
+    }
+    #soft-bg.visible { opacity: 0.4; }
+
+    #character-slot {
+      position: relative;
+      z-index: 2;
+      width: min(92vw, 420px);
+      min-height: min(48vh, 360px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    #gojo-img {
+      max-width: 100%;
+      max-height: min(52vh, 440px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.55));
+      will-change: transform;
+    }
+    #gojo-img[hidden] { display: none !important; }
+
+    .speech-bubble {
+      position: relative;
+      z-index: 3;
+      max-width: min(92vw, 520px);
+      margin: 1rem auto 0;
+      padding: 1rem 1.25rem 1.1rem;
+      background: #fff;
+      color: #111;
+      border: 3px solid #000;
+      border-radius: 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.9rem, 3.2vw, 1.05rem);
+      line-height: 1.45;
+      transform: rotate(-1.2deg);
+      box-shadow: 6px 8px 0 rgba(0, 0, 0, 0.85);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -14px;
+      left: 28%;
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 14px solid #000;
+    }
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: calc(28% + 2px);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 11px solid #fff;
+      z-index: 1;
+    }
+    .speech-bubble.is-hidden { display: none !important; }
+
+    .cta-row {
+      margin-top: 1.25rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      z-index: 4;
+    }
+
+    .btn-ghost {
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 0.65rem 1.35rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #letters-panel {
+      position: relative;
+      z-index: 4;
+      width: 100%;
+      max-width: min(92vw, 520px);
+      margin-top: 1rem;
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+    }
+    #letters-panel.active { display: flex; }
+
+    .glass-letter {
+      font-family: 'Cormorant Garamond', serif;
+      padding: 1.25rem 1.35rem;
+      border-radius: 16px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+    .glass-letter h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .glass-letter p {
+      margin: 0;
+      font-size: clamp(1.05rem, 3.5vw, 1.2rem);
+      line-height: 1.55;
+      color: rgba(255, 250, 255, 0.95);
+    }
+    .letter-meta {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    #choice-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+      z-index: 5;
+      width: 100%;
+      max-width: min(92vw, 400px);
+      margin-top: 0.75rem;
+    }
+    #choice-panel.active { display: flex; }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      width: 100%;
+    }
+    @media (min-width: 480px) {
+      .choice-grid { grid-template-columns: 1fr 1fr; }
+      .choice-grid .btn-choice:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    }
+
+    .btn-choice {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      background: rgba(20, 12, 32, 0.75);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-choice:hover { border-color: rgba(255, 255, 255, 0.55); background: rgba(40, 28, 58, 0.85); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="pulse-overlay" aria-hidden="true"></div>
+
+  <div id="start-screen" role="dialog" aria-labelledby="start-title">
+    <div class="title-block">
+      <h1 id="start-title">Birthday Stage</h1>
+      <p id="start-sub">Tap Start — sound unlocks on your first touch. A small visual novel moment awaits.</p>
+      <button type="button" class="btn-primary" id="btn-start">Start</button>
+    </div>
+  </div>
+
+  <div id="stage-wrap">
+    <div id="soft-bg" aria-hidden="true"></div>
+
+    <div id="character-slot">
+      <img id="gojo-img" alt="" />
+    </div>
+
+    <div class="speech-bubble" id="bubble" role="status" aria-live="polite">
+      <span id="bubble-text"></span>
+    </div>
+
+    <p id="reaction-line"></p>
+
+    <div id="letters-panel" aria-label="Letters">
+      <div class="glass-letter" id="letter-card">
+        <h3 id="letter-title"></h3>
+        <p id="letter-body"></p>
+        <div class="letter-meta" id="letter-step"></div>
+      </div>
+    </div>
+
+    <div class="cta-row" id="nav-row">
+      <button type="button" class="btn-ghost" id="btn-next">Continue</button>
+    </div>
+
+    <div id="choice-panel">
+      <div class="choice-grid" id="choice-buttons"></div>
+    </div>
+  </div>
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    (function ensureGsap() {
+      if (typeof gsap !== 'undefined') return;
+      var noopTween = { kill: function () {}, pause: function () {} };
+      window.gsap = {
+        set: function () {},
+        to: function () {
+          return noopTween;
+        },
+        fromTo: function () {
+          return noopTween;
+        },
+        timeline: function (opts) {
+          var total = 0;
+          var tl = {
+            to: function (target, vars) {
+              total += ((vars && vars.duration) || 0) * 1000;
+              return tl;
+            },
+          };
+          queueMicrotask(function () {
+            setTimeout(function () {
+              if (opts && opts.onComplete) opts.onComplete();
+            }, total);
+          });
+          return tl;
+        },
+        killTweensOf: function () {},
+      };
+    })();
+
+    const BIRTHDAY_CONFIG = {
+      recipientName: 'Cutie',
+
+      ui: {
+        startTitle: 'Birthday Stage',
+        startHint: 'Tap Start — sound unlocks on your first touch. A small visual novel moment awaits.',
+        startButton: 'Start',
+        continueLabel: 'Continue',
+        nextLetterLabel: 'Next letter',
+        replayLabel: 'Replay',
+      },
+
+      entrance: {
+        image: 'Assets/hi-gojo-hd.gif',
+        dialogue: 'Yo {name}! Did you forget what day it is?',
+      },
+
+      wish: {
+        image: 'Assets/happy-gojo.gif',
+        dialogue: 'Happy Birthday, {name}. Come here — I saved the whole day for you.',
+      },
+
+      chad: {
+        image: 'Assets/chad-gojo.webp',
+        dialogue: "You already know I'm that guy. Today's just proof.",
+      },
+
+      small: {
+        image: 'Assets/gojo-getting-small.gif',
+        dialogue: 'Okay, okay — I can play humble for five seconds. …Four. Three.',
+      },
+
+      twerk: {
+        image: 'Assets/gojo-twerking.webp',
+        dialogue: "If you're not dancing on your birthday, the universe files a complaint. Trust me.",
+      },
+
+      bridge: {
+        image: 'Assets/hi-gojo.gif',
+        dialogue: 'Alright {name}, breathe. Letters next — glass-quiet, promise.',
+      },
+
+      letters: {
+        backgroundImage: 'Assets/pet-gojo.webp',
+        items: [
+          {
+            title: 'I.',
+            body: 'On your birthday, the world tilts a little softer — like light through glass.',
+          },
+          {
+            title: 'II.',
+            body: 'You carry a quiet crown in how you love, how you try, how you stay.',
+          },
+          {
+            title: 'III.',
+            body: 'If the year was loud, let today be a hush made just for you.',
+          },
+          {
+            title: 'IV.',
+            body: 'May your wishes feel inevitable — not lucky, but earned.',
+          },
+          {
+            title: 'V.',
+            body: 'And if you forget everything else, remember: you are chosen. Happy birthday, {name}.',
+          },
+        ],
+      },
+
+      final: {
+        image: 'Assets/chad-gojo.webp',
+        prompt: "So… what's it going to be?",
+        choices: {
+          hug: {
+            label: 'Hug Gojo',
+            reaction: 'Warmth floods the room — sometimes the bravest thing is to stay.',
+            reactionImage: 'Assets/happy-gojo.gif',
+          },
+          slap: {
+            label: 'Slap Him',
+            reaction: 'A sharp sound, then silence. He rubs his cheek, grinning like he deserved it.',
+            reactionImage: 'Assets/gojo-mad.gif',
+          },
+          },
+        },
+      },
+
+    };
+
+    function formatDialogue(str) {
+      const n = BIRTHDAY_CONFIG.recipientName || 'you';
+      return String(str).replace(/\{name\}/gi, n);
+    }
+
+    function bindImage(img, url, onHideParent, onReady) {
+      if (!img || !url) {
+        if (img) img.hidden = true;
+        if (typeof onHideParent === 'function') onHideParent();
+        return;
+      }
+      img.hidden = false;
+      img.onload = function () {
+        img.hidden = false;
+        if (typeof onReady === 'function') onReady();
+      };
+      img.onerror = function () {
+        img.hidden = true;
+        if (typeof onHideParent === 'function') onHideParent();
+      };
+      img.removeAttribute('src');
+      img.src = url;
+    }
+
+    function bindBackgroundImage(el, url) {
+      if (!el || !url) {
+        if (el) el.classList.remove('visible');
+        return;
+      }
+      const probe = new Image();
+      probe.onload = function () {
+        el.style.backgroundImage = 'url("' + url.replace(/"/g, '\\"') + '")';
+        el.classList.add('visible');
+      };
+      probe.onerror = function () {
+        el.classList.remove('visible');
+        el.style.backgroundImage = 'none';
+      };
+      probe.src = url;
+    }
+
+
+
+    const gojoImg = document.getElementById('gojo-img');
+    const bubbleEl = document.getElementById('bubble');
+    const bubbleText = document.getElementById('bubble-text');
+    const softBg = document.getElementById('soft-bg');
+    const lettersPanel = document.getElementById('letters-panel');
+    const letterTitle = document.getElementById('letter-title');
+    const letterBody = document.getElementById('letter-body');
+    const letterStep = document.getElementById('letter-step');
+    const choicePanel = document.getElementById('choice-panel');
+    const choiceButtons = document.getElementById('choice-buttons');
+    const btnNext = document.getElementById('btn-next');
+    const navRow = document.getElementById('nav-row');
+    const startScreen = document.getElementById('start-screen');
+    const btnStart = document.getElementById('btn-start');
+    (function applyUiCopy() {
+      var ui = BIRTHDAY_CONFIG.ui || {};
+      var t = document.getElementById('start-title');
+      var s = document.getElementById('start-sub');
+      if (t && ui.startTitle) t.textContent = ui.startTitle;
+      if (s && ui.startHint) s.textContent = ui.startHint;
+      if (btnStart && ui.startButton) btnStart.textContent = ui.startButton;
+    })();
+    const reactionLine = document.getElementById('reaction-line');
+    const pulseOverlay = document.getElementById('pulse-overlay');
+
+    const state = {
+      scene: 'idle',
+      letterIndex: 0,
+      choiceLocked: false,
+    };
+
+    function setBubble(text) {
+      bubbleText.textContent = formatDialogue(text || '');
+    }
+
+    function showReaction(text) {
+      reactionLine.textContent = formatDialogue(text || '');
+      reactionLine.classList.add('visible');
+    }
+
+    function hideReaction() {
+      reactionLine.classList.remove('visible');
+      reactionLine.textContent = '';
+    }
+
+    function pulseScreen() {
+      gsap.fromTo(
+        pulseOverlay,
+        { opacity: 0 },
+        {
+          opacity: 1,
+          duration: 0.14,
+          ease: 'power2.out',
+          yoyo: true,
+          repeat: 1,
+          onComplete: function () {
+            gsap.set(pulseOverlay, { opacity: 0 });
+          },
+        }
+      );
+      gsap.fromTo(
+        'body',
+        { filter: 'brightness(1)' },
+        {
+          filter: 'brightness(1.35)',
+          duration: 0.12,
+          yoyo: true,
+          repeat: 1,
+          ease: 'power2.inOut',
+          onComplete: function () {
+            gsap.set('body', { clearProps: 'filter' });
+          },
+        }
+      );
+    }
+    function enterBeat(sceneKey) {
+      state.scene = sceneKey;
+      hideReaction();
+      bubbleEl.classList.remove('is-hidden');
+      var cfg = BIRTHDAY_CONFIG[sceneKey];
+      if (!cfg || !cfg.image) return;
+      bindImage(gojoImg, cfg.image);
+      setBubble(cfg.dialogue || '');
+      gsap.fromTo(
+        gojoImg,
+        { scale: 0.94, opacity: 0.88 },
+        { scale: 1, opacity: 1, duration: 0.55, ease: 'power2.out' }
+      );
+
+    }
+
+    function enterEntrance() {
+      state.scene = 'entrance';
+      state.choiceLocked = false;
+      hideReaction();
+      bubbleEl.classList.remove('is-hidden');
+      lettersPanel.classList.remove('active');
+      choicePanel.classList.remove('active');
+      choiceButtons.innerHTML = '';
+      softBg.classList.remove('visible');
+      softBg.style.backgroundImage = 'none';
+      navRow.style.display = 'flex';
+      btnNext.style.display = 'inline-block';
+      btnNext.textContent = (BIRTHDAY_CONFIG.ui && BIRTHDAY_CONFIG.ui.continueLabel) || 'Continue';
+
+      bindImage(gojoImg, BIRTHDAY_CONFIG.entrance.image);
+      setBubble(BIRTHDAY_CONFIG.entrance.dialogue);
+
+      gsap.set(gojoImg, { x: '120%', opacity: 0 });
+      gsap.to(gojoImg, {
+        x: '0%',
+        opacity: 1,
+        duration: 1.05,
+        ease: 'power3.out',
+      });
+    }
+
+    function enterWish() {
+      state.scene = 'wish';
+      hideReaction();
+      bindImage(gojoImg, BIRTHDAY_CONFIG.wish.image);
+      setBubble(BIRTHDAY_CONFIG.wish.dialogue);
+
+      gsap.fromTo(
+        gojoImg,
+        { scale: 0.92, x: '8%' },
+        { scale: 1, x: '0%', duration: 0.75, ease: 'power2.out' }
+      );
+      pulseScreen();
+    }
+
+    function renderLetter() {
+      const items = (BIRTHDAY_CONFIG.letters && BIRTHDAY_CONFIG.letters.items) || [];
+      const L = items[state.letterIndex];
+      if (!L) return;
+      letterTitle.textContent = L.title || '';
+      letterBody.textContent = formatDialogue(L.body || '');
+      letterStep.textContent = 'Letter ' + (state.letterIndex + 1) + ' / ' + items.length;
+      gsap.fromTo(
+        '#letter-card',
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }
+      );
+    }
+
+    function enterLetters() {
+      state.scene = 'letters';
+      state.letterIndex = 0;
+      hideReaction();
+      bindBackgroundImage(softBg, BIRTHDAY_CONFIG.letters && BIRTHDAY_CONFIG.letters.backgroundImage);
+      bindImage(gojoImg, null);
+      lettersPanel.classList.add('active');
+      choicePanel.classList.remove('active');
+      choiceButtons.innerHTML = '';
+      setBubble('');
+      bubbleEl.classList.add('is-hidden');
+
+      btnNext.style.display = 'inline-block';
+      btnNext.textContent = (BIRTHDAY_CONFIG.ui && BIRTHDAY_CONFIG.ui.nextLetterLabel) || 'Next letter';
+
+      renderLetter();
+    }
+
+    function enterFinal() {
+      state.scene = 'final';
+      state.choiceLocked = false;
+      lettersPanel.classList.remove('active');
+      bubbleEl.classList.remove('is-hidden');
+      bindBackgroundImage(softBg, null);
+      softBg.classList.remove('visible');
+
+      bindImage(gojoImg, BIRTHDAY_CONFIG.final.image);
+      setBubble((BIRTHDAY_CONFIG.final && BIRTHDAY_CONFIG.final.prompt) || '');
+
+      navRow.style.display = 'none';
+      choicePanel.classList.add('active');
+      choiceButtons.innerHTML = '';
+
+      const ch = (BIRTHDAY_CONFIG.final && BIRTHDAY_CONFIG.final.choices) || {};
+      const order = ['hug', 'slap'];
+
+      order.forEach(function (key) {
+        const item = ch[key];
+        if (!item) return;
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn-choice';
+        b.textContent = item.label || key;
+        b.addEventListener('click', function () {
+          if (state.choiceLocked) return;
+          state.choiceLocked = true;
+          bindImage(gojoImg, item.reactionImage || BIRTHDAY_CONFIG.final.image);
+          showReaction(item.reaction || '');
+          setBubble('');
+          bubbleEl.classList.add('is-hidden');
+
+          choicePanel.classList.remove('active');
+          navRow.style.display = 'flex';
+          btnNext.style.display = 'inline-block';
+          btnNext.textContent = (BIRTHDAY_CONFIG.ui && BIRTHDAY_CONFIG.ui.replayLabel) || 'Replay';
+        });
+        choiceButtons.appendChild(b);
+      });
+    }
+
+    function onNextClick() {
+      if (state.scene === 'entrance') {
+        enterWish();
+        return;
+      }
+      if (state.scene === 'wish') {
+        enterBeat('chad');
+        return;
+      }
+      if (state.scene === 'chad') {
+        enterBeat('small');
+        return;
+      }
+      if (state.scene === 'small') {
+        enterBeat('twerk');
+        return;
+      }
+      if (state.scene === 'twerk') {
+        enterBeat('bridge');
+        return;
+      }
+      if (state.scene === 'bridge') {
+        enterLetters();
+        return;
+      }
+      if (state.scene === 'letters') {
+        const items = (BIRTHDAY_CONFIG.letters && BIRTHDAY_CONFIG.letters.items) || [];
+        if (state.letterIndex < items.length - 1) {
+          state.letterIndex += 1;
+          renderLetter();
+        } else {
+          enterFinal();
+        }
+        return;
+      }
+      if (state.scene === 'final') {
+        enterEntrance();
+        return;
+      }
+    }
+
+    btnNext.addEventListener('click', onNextClick);
+
+    btnStart.addEventListener('click', function () {
+      startScreen.classList.add('hidden');
+      enterEntrance();
+    });
+
+  </script>
+</body>
+</html>
