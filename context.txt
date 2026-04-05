@@ -1,0 +1,235 @@
+PROJECT: Interactive Birthday Visual Novel (Chibi Gojo Theme)
+
+GOAL:
+Create a humorous, interactive, story-driven web experience (hosted via GitHub Pages) that plays like a lightweight visual novel. The project is designed as a birthday gift.
+
+The experience should feel:
+
+* cinematic
+* smooth
+* emotionally engaging but comedic
+* reactive to user choices
+* visually consistent (manga-style chibi characters)
+
+---
+
+CORE STRUCTURE:
+
+The project is a STATIC WEBSITE with:
+
+* index.html
+* style.css
+* script.js
+* /images folder
+
+No frameworks. Pure HTML/CSS/JS.
+
+---
+
+ENGINE LOGIC:
+
+The system works as a SCENE-BASED VISUAL NOVEL.
+
+Each scene contains:
+
+* image (character state)
+* dialogue text (optional)
+* optional branching choices
+
+Flow:
+
+* Click → next scene
+* If text is typing → click completes it
+* If complete → next click advances
+
+Branching is handled using:
+
+* scene arrays
+* path switching (startPath function)
+
+---
+
+STORY FLOW (MAIN EXPERIENCE):
+
+1. Background shows park scene (idle state)
+
+2. User clicks → Gojo peeks from right
+
+3. Gojo enters with twerking animation (GIF)
+
+4. Gojo says "Hi"
+
+5. Girl (back-facing sprite) appears
+
+6. Gojo (emotional):
+   "Do you know how long I waited for this day"
+
+7. Girl confused (no face shown)
+
+8. Gojo:
+   "It's your birthday"
+
+9. Gojo offers cake
+
+10. Girl blows candle
+
+11. Gojo eats entire cake instantly (comedy moment)
+
+12. Girl silent reaction
+
+13. Gojo gives gift
+
+14. Girl opens → gets angry
+
+---
+
+FIRST MAJOR CHOICE:
+
+User chooses:
+
+* Slap him
+* Laugh it off
+
+---
+
+LAUGH PATH:
+
+* Gojo says: "Glad you liked it 😎"
+* Ends
+
+---
+
+SLAP PATH:
+
+1. Slap scene (impact)
+2. Gojo crying
+
+Second choice:
+
+* Comfort him
+* Leave
+
+---
+
+LEAVE PATH:
+
+* Girl walks away
+* Gojo cries harder
+
+---
+
+COMFORT PATH:
+
+1. Girl comforts him
+
+2. Gojo calms down
+
+3. Gojo tries to hug
+
+Third choice:
+
+* Push him
+* Hug him
+
+---
+
+PUSH PATH:
+
+* Girl pushes him away
+* Leaves
+
+---
+
+HUG PATH:
+
+1. They hug
+
+2. Gojo suddenly kisses her hand
+
+3. Gojo runs away saying:
+   "Gurl, you're fast but not fast enoughhh"
+
+4. Final scene:
+   Girl tired (back facing)
+
+---
+
+VISUAL RULES:
+
+* All characters are CHIBI style
+* Black & white manga style
+* NO backgrounds inside character images
+* Background handled separately in CSS
+* Girl:
+
+  * ALWAYS back-facing except when explicitly allowed
+  * Same size/proportion as Gojo
+* No inconsistent proportions
+
+---
+
+ANIMATION + UX RULES:
+
+* Character fades between scenes
+* Typewriter text effect
+* Click behavior:
+
+  * First click → completes text
+  * Second click → next scene
+* Choices appear only after text completes
+
+---
+
+NAMING CONVENTION:
+
+All assets stored in:
+/images/
+
+Examples:
+
+* gojo_peek.png
+* gojo_twerk.gif
+* gojo_cake.png
+* girl_back.png
+* slap.png
+
+Consistency is CRITICAL.
+
+---
+
+DESIGN PRINCIPLES:
+
+* Keep it SIMPLE (no frameworks)
+* Avoid overengineering
+* Focus on FLOW + TIMING
+* Humor timing is important
+* Each scene must feel intentional
+
+---
+
+FUTURE ENHANCEMENTS (OPTIONAL):
+
+* sound effects (slap, eating, footsteps)
+* background music loop
+* screen shake on impact scenes
+* slight camera zoom for dramatic moments
+
+---
+
+IMPORTANT CONSTRAINTS:
+
+* This is NOT a full game engine
+* Keep logic readable and editable
+* No external dependencies
+* Must run on GitHub Pages without build tools
+
+---
+
+EXPECTED OUTPUT:
+
+A polished, smooth, funny interactive story
+that feels like a mini anime episode.
+
+---
+
+END OF CONTEXT

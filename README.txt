@@ -1,0 +1,1 @@
+Put your generated images into /images with the exact names used in script.js
