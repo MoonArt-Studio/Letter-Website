@@ -131,7 +131,7 @@ const mainStory = [
     { img: "images/anywhere_girl.png", text: "???" },
     { img: "images/gojo_emotional.png", text: "It's your birthday." },
     { img: "images/gojo_cake.png", text: "Here... take this 🎂" },
-    { img: "images/bg_park.png", text: "Close your eyes and make a wish..." },
+    { img: "images/blowing_candles.png", text: "Close your eyes and make a wish..." },
     { img: "images/gojo_eat.png", text: "*NOM NOM NOM*" },
     { img: "images/gojo_eat.png", text: "Hey! You ate the whole thing?!" },
     { img: "images/gojo_gift.png", text: "Wait! I got a gift for you to make up for it." },
